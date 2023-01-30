@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+
+<input type="text" id="update-article-input" placeholder="Type here to update the article">
+<button id="update-article-button">Update</button>
+<button id="read-aloud-button">Speak</button>
+
+<p id="article">The Earth is formed of the crust, the mantle and the inner and outer cores. The solid inner core is situated about 3,200 miles below the Earth’s crust and is separated from the semi-solid mantle by the liquid outer core, which allows the inner core to rotate at a different speed from the rotation of the Earth itself.</p>
+
+
+<script>
+
+    // split article and add listener
+
+    speak_word();
+
+
+    // update article 
+    var updateArticleInput = document.getElementById("update-article-input");
+    var updateArticleButton = document.getElementById("update-article-button");
+    updateArticleButton.addEventListener("click", function(){
+        var newArticle = updateArticleInput.value;
+        document.getElementById("article").innerHTML = newArticle;
+        speak_word();
+    });
+
+  
+
+
+
+
+    function speak_word() {
+        var article = document.getElementById("article");
+        var words = article.innerHTML.split(" ");
+        var synth = window.speechSynthesis;
+
+        article.innerHTML = "";
+        for (var i = 0; i < words.length; i++) {
+            var newWord = document.createElement("span");
+            newWord.innerHTML = words[i];
+
+            newWord.addEventListener("click", function() {
+                synth.cancel(); //停止先前的發音
+                var utterThis = new SpeechSynthesisUtterance(this.textContent);
+                utterThis.voice = window.speechSynthesis.getVoices().filter(function(voice) { return voice.name == 'Google US English'; })[0];
+                synth.speak(utterThis);
+
+                // translate 
+                const proxyurl = "https://cors-anywhere.herokuapp.com/";
+                var url = 'https://translate.google.com.tw/?hl=zh-TW&tab=rT&sl=auto&tl=zh-TW&text=' + this.textContent + '&op=translate'; 
+                
+                fetch( url, { mode: 'no-cors' })
+                .then(response => response.text())
+                .then(data => {
+                    console.log(data);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+
+            });
+
+            article.addEventListener('mouseover', function(e) {
+            var target = e.target;
+            if (target.nodeName === 'SPAN' && target.innerHTML != " ") {
+                target.style.backgroundColor = 'yellow';
+                target.style.cursor = 'pointer';
+            }
+            });
+            article.addEventListener('mouseout', function(e) {
+                var target = e.target;
+                if (target.nodeName === 'SPAN') {
+                    target.style.backgroundColor = '';
+                }
+            });
+
+            var sep = document.createElement("span");
+            sep.innerHTML = " ";
+
+            article.appendChild(newWord);
+            article.appendChild(sep);
+            
+        }
+
+
+        // speak all word button
+        var readAloudButton = document.getElementById("read-aloud-button");
+        readAloudButton.addEventListener("click", function(){
+
+            synth.cancel(); //停止先前的發音
+            var article = document.getElementById("article").textContent;
+
+            var sentences = article.match(/[^\.!\?]+[\.!\?]+/g);
+
+            if(sentences === null){
+                var utterThis = new SpeechSynthesisUtterance(article);
+                utterThis.voice = window.speechSynthesis.getVoices().filter(function(voice) { return voice.name == 'Google US English'; })[0];
+                synth.speak(utterThis);
+            }else{
+                for (var i = 0; i < sentences.length; i++) {
+                var utterThis = new SpeechSynthesisUtterance(sentences[i]);
+                utterThis.voice = window.speechSynthesis.getVoices().filter(function(voice) { return voice.name == 'Google US English'; })[0];
+                synth.speak(utterThis);
+            }
+
+
+            }
+
+
+        });
+
+
+
+    }
+
+
+    function translate_word(){
+
+    }
+
+</script>
+
+</body>
+</html>
